@@ -4,6 +4,22 @@ import urlStore from '../models/urlStore.js';
 
 const router = express.Router();
 
+router.get('/stats', (req, res) => {
+  const stats = [];
+  for (const [code, data] of urlStore.entries()) {
+    stats.push({
+      shortUrl: `http://localhost:5000/${code}`,
+      originalUrl: data.originalUrl,
+      expiry: data.expiry,
+      clicks: data.clicks,
+      clickDetails: data.clickDetails,
+    });
+  }
+  res.json(stats);
+});
+
+
+
 router.post('/shorten', (req, res) => {
   const urls = req.body.urls;
   if (!Array.isArray(urls) || urls.length === 0 || urls.length > 5) {
@@ -29,6 +45,7 @@ router.post('/shorten', (req, res) => {
   res.json(result);
 });
 
+
 router.get('/:code', (req, res) => {
   const code = req.params.code;
   const data = urlStore.get(code);
@@ -40,20 +57,6 @@ router.get('/:code', (req, res) => {
   data.clickDetails.push({ time: new Date().toISOString(), origin: req.get('origin') || 'unknown' });
 
   res.redirect(data.originalUrl);
-});
-
-router.get('/stats', (req, res) => {
-  const stats = [];
-  for (const [code, data] of urlStore.entries()) {
-    stats.push({
-      shortUrl: `http://localhost:5000/${code}`,
-      originalUrl: data.originalUrl,
-      expiry: data.expiry,
-      clicks: data.clicks,
-      clickDetails: data.clickDetails,
-    });
-  }
-  res.json(stats);
 });
 
 export default router;
